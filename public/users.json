@@ -1,0 +1,62 @@
+[
+    {
+        "id": 1,
+        "username": "Shoham",
+        "password": "531995",
+        "name": "Shoham",
+        "lastName": "Katzav",
+        "email": "shohamkatzav95@gmail.com",
+        "authorize": "admin",
+        "avatar": "Shoham"
+    },
+    {
+        "id": 2,
+        "username": "Moshe",
+        "password": "12345",
+        "name": "Moshe",
+        "lastName": "Cohen",
+        "email": "Moshe@we-digital.com",
+        "authorize": "customer",
+        "avatar": "Moshe"
+    },
+    {
+        "id": 3,
+        "username": "Yossef",
+        "password": "12345",
+        "name": "Yossef",
+        "lastName": "Levi",
+        "email": "Yossef@we-digital.com",
+        "authorize": "customer",
+        "avatar": "Yossef"
+    },
+    {
+        "id": 4,
+        "username": "Dana",
+        "password": "12345",
+        "name": "Dana",
+        "lastName": "Dan",
+        "email": "Dana@we-digital.com",
+        "authorize": "customer",
+        "avatar": "Dana"
+    },
+    {
+        "id": 5,
+        "username": "Haim",
+        "password": "12345",
+        "name": "Haim",
+        "lastName": "Gad",
+        "email": "Haim@we-digital.com",
+        "authorize": "customer",
+        "avatar": "Haim"
+    },
+    {
+        "id": 6,
+        "username": "Efrat",
+        "password": "12345",
+        "name": "Efrat",
+        "lastName": "Menashe",
+        "email": "Efrat@we-digital.com",
+        "authorize": "customer",
+        "avatar": "Efrat"
+    }
+]
