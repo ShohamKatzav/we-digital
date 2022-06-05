@@ -26,7 +26,7 @@ export default function UserDetails() {
             <label>Customer number: {User.id}</label>
             <label>Account type: {User.authorize}</label>
           </div>
-          <button type="button" onClick={navigateToUserDetails}>Orders</button>
+          <button className="CustomButton" type="button" onClick={navigateToUserDetails}>Orders</button>
         </form>
       </div>
     );
