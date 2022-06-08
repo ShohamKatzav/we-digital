@@ -4,10 +4,12 @@ We digital is an online store for computers and computer peripheral devices.
 
 ## Libraries
 
-Alerts made with the library react-toastify.
-Search a Product/Customer/Order made with the library mui/material.
-Price slider made with multi-range-slider-react.
-Select a product (Add a product to exist order) made with react-select.
+* Navigate between pages with react-router.
+* Alerts made with the library react-toastify.
+* Search a Product/Customer/Order made with Autocomplete from the library mui/material.
+* Price slider made with multi-range-slider-react.
+* Select a product/order/customer made with react-select.
+* Date (customers/orders) view with DataGrid from mui/x-data-grid.
 
 ## Login
 
@@ -22,7 +24,7 @@ Users information stored in JSON file.
 Every user has his own responsive bar.
 User who authorized as admin will be able to see more options than customer in his bar.
 
-## Navigate options for customer
+## Navigate options for customer:
 
 ### Home
 
@@ -40,7 +42,7 @@ Information about the store and its services.
 
 Logout the connected user.
 
-## Navigate options for admin
+## Navigate options for admin:
 
 ### Manage categories
 
