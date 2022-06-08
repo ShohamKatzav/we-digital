@@ -9,7 +9,7 @@ We digital is an online store for computers and computer peripheral devices.
 * Search a Product/Customer/Order made with Autocomplete from the library mui/material.
 * Price slider made with multi-range-slider-react.
 * Select a product/order/customer made with react-select.
-* Date (customers/orders) view with DataGrid from mui/x-data-grid.
+* Data (customers/orders) view with DataGrid from mui/x-data-grid.
 
 ## Login
 
