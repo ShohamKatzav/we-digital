@@ -1,14 +1,33 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect} from "react";
+import { useEffect, useState } from "react";
+import { DataGrid } from "@mui/x-data-grid";
 
 export default function ViewOrders() {
 
     const navigate = useNavigate();
     const Users = JSON.parse(localStorage.getItem("users"));
     const Orders = JSON.parse(localStorage.getItem("orders"));
+    const [pageSize, setPageSize] = useState(5);
 
-    useEffect(() => 
-    {
+    const rows = Array.from(Orders).map(order => (
+        {
+            id: order.orderID,
+            customerName: (Users.find(user => user.id === order.userID)).name,
+            date: order.date,
+            lastDate: order.lastDateToSupply,
+            price: order.tottalPrice
+        }
+    ));
+
+    const columns = [
+        { field: "id", headerName: "ID", width: 50 },
+        { field: "customerName", headerName: "Customer Name", width: 150 },
+        { field: "date", headerName: "Created On", width: 200 },
+        { field: "lastDate", headerName: "Last Date To Supply", width: 200 },
+        { field: "price", headerName: "Price", width: 100 }
+    ];
+
+    useEffect(() => {
         const FillTheTable = () => {
             var table = document.getElementById("OrdersTable");
             let rows = document.querySelectorAll("tr");
@@ -46,16 +65,18 @@ export default function ViewOrders() {
     });
 
     return (
-        <div>
-            <table id='OrdersTable'>
-                <tbody>
-                    <tr>
-                        <th>Customer</th>
-                        <th>Order Number</th>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        
+            <div className='DataTable'>
+                <DataGrid rows={rows} columns={columns} getRowId={(row) => row.id}
+                    pageSize={pageSize}
+                    onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                    rowsPerPageOptions={[5, 10, 20]}
+                    onSelectionModelChange={(newSelectionModel) => {
+                         var order = Orders.find(order => order.orderID === parseInt(newSelectionModel));
+                         navigate(String(order.orderID), { state: { user: Users.find(user => user.id === order.userID), order: order } });
+                    }} />
+            </div>
+        
 
     );
 }

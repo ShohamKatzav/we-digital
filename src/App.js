@@ -13,7 +13,7 @@ import Customers from './Pages/Customers'
 import UserDetails from './Pages/UserDetails';
 import Navigation from './Components/Navigation';
 import OrderDetails from './Pages/OrderDetails';
-import MyOrders from './Pages/MyOrders';
+import OrdersForUser from './Pages/OrdersForUser';
 import CreateOrder from './Pages/CreateOrder';
 import ProtectedRoute from './Auth/ProtectedRouth';
 import ChangeProductsInOrder from './Pages/ChangeProductsInOrder';
@@ -35,6 +35,7 @@ export default function App() {
             <h2 className="HomeHeader">Welcome to our online computers store</h2>
             <img className="Logo" src={Logo} alt="Logo"></img>
           </div>
+          <div className='background'></div>
           <Routes>
             <Route path="/" element={<Login />} />
             <Route element={<ProtectedRoute />}>
@@ -46,12 +47,12 @@ export default function App() {
               <Route path="/ManageProducts" element={<ManageProducts />} />
               <Route path="/Customers" element={<Customers />} />
               <Route path="/Customers/:UserName" element={<UserDetails />} />
-              <Route path="/Customers/:UserName/Orders" element={<MyOrders />} />
+              <Route path="/Customers/:UserName/Orders" element={<OrdersForUser />} />
               <Route path="/ManageOrders" element={<ManageOrders />} />
               <Route path="/ManageOrders/:OrderID" element={<EditOrder />} />
               <Route path="/ChangeProducts" element={<ChangeProductsInOrder />} />
               <Route path="/ChangeCustomer" element={<ChangeCustomerInOrder />} />
-              <Route path="/Orders" element={<MyOrders />} />
+              <Route path="/Orders" element={<OrdersForUser />} />
               <Route path="/Orders/:OrderID" element={<OrderDetails />} />
               <Route path="/CreateOrder/:OrderID" element={<CreateOrder />} />
             </Route>

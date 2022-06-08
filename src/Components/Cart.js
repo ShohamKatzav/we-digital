@@ -9,7 +9,11 @@ export default function Cart() {
     const User = JSON.parse(sessionStorage.getItem("ConnectedUser"));
     const location = useLocation();
 
-    if (location.pathname !=='/')
+    if (location.pathname === '/' || User === null)
+    {
+        return null;
+    }
+    else
         return (
             <span>
                 {NewOrder === null &&

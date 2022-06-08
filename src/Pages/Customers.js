@@ -1,51 +1,46 @@
-
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Search from '../Components/Search';
+import { DataGrid } from "@mui/x-data-grid";
 
 export default function Customers() {
 
     const navigate = useNavigate();
-    const [Users, SetUsers] = useState([]);
+    const Users = JSON.parse(localStorage.getItem('users'));
+    const [pageSize, setPageSize] = useState(5);
 
-    async function getUsers() {
-        let myObject = await fetch('users.json');
-        let myText = await myObject.text()
-        await SetUsers(JSON.parse(myText));
-    }
-
-
-
-    useEffect(() => {
-        getUsers();
-        const FillTheTable = () => {
-            var table = document.getElementById("UsersTable");
-            let rows = document.querySelectorAll("tr");
-            if (rows.length < 1) {
-                for (let i = 0; i < Users.length; i++) {
-                    var newRow = table.insertRow(-1);
-                    var cell = newRow.insertCell(0);
-                    cell.classList.add("ClickableCell");
-                    cell.innerHTML = Users[i].username;
-                    cell.addEventListener("click", (e) => {
-                        navigate(e.target.innerHTML, { state: { user: Users[i] } });
-                    })
-                }
-            }
+    const rows = Array.from(Users).map(user => (
+        {
+            id: user.id,
+            name: user.name,
+            email: user.email
         }
-        FillTheTable();
-    }, [Users, navigate]);
+    ));
+
+    const columns = [
+        { field: "id", headerName: "ID", width: 150 },
+        { field: "name", headerName: "Name", width: 150 },
+        { field: "email", headerName: "E-mail", width: 270 }
+    ];
 
     return (
         <div className='CenteredForm'>
-            <h1 className='PageHeader'>Customers</h1>
-            <table id='UsersTable'>
-                <tbody>
-                </tbody>
-            </table>
-            <h2 className="PageHeader">Users search:</h2>
-            <div className="Search">
-                <Search items={Users} type="customer" />
+            <h1 className='PageHeader'><span>Customers</span></h1>
+            <div className='DataTable'>
+                <DataGrid rows={rows} columns={columns} getRowId={(row) => row.id}
+                    pageSize={pageSize}
+                    onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                    rowsPerPageOptions={[5, 10, 20]}
+                    onSelectionModelChange={(newSelectionModel) => {
+                        var user = Users.find(user => user.id === parseInt(newSelectionModel))
+                        navigate(user.name, { state: { user: user } });
+                    }} />
+            </div>
+            <div className="CenteredForm">
+                <h2 className="PageHeader"><span>Users search:</span></h2>
+                <div className='Search'>
+                    <Search items={Users} type="customer" />
+                </div>
             </div>
         </div>
     );

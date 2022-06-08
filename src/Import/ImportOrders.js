@@ -64,6 +64,20 @@ let ORDERS = [
         productsID: [15, 3],
         date: GetDate(),
         lastDateToSupply: GetLastDate(),
+    },
+    {
+        orderID: 10,
+        userID: 7,
+        productsID: [15, 23],
+        date: GetDate(),
+        lastDateToSupply: GetLastDate(),
+    },
+    {
+        orderID: 11,
+        userID: 7,
+        productsID: [9, 15, 24, 30, 19],
+        date: GetDate(),
+        lastDateToSupply: GetLastDate(),
     }
 ];
 

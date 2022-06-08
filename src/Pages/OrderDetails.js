@@ -33,19 +33,19 @@ useEffect(() => {
 return (
     <span>
         {Orders.find(order => order.orderID === CurrentOrder.orderID) &&
-            <h1 className="PageHeader">Details for order number {OrderID}:</h1>
+            <h1 className="PageHeader"><span>Details for order number {OrderID}:</span></h1>
         }
         {OrderID === "NewOrder" &&
-            <h1 className="PageHeader">Cart details</h1>
+            <h1 className="PageHeader"><span>Shopping cart details:</span></h1>
         }
-        <form className="CenteredForm">
+        <form className="CenteredForm ManageForm">
             <p><label>Customer: {User.name} </label></p>
             <span>
                 <p>
                     <label>Products:</label> <br />
                     {
                         Array.from(ProductsInThisOrder).map((product, key) =>
-                            <li key={key}>{product.name}</li>)
+                            <li key={key}>{product.name} - price: {product.price} ₪</li>)
                     }
                 </p>
                 {Orders.find(order => order.orderID === CurrentOrder.orderID) &&
@@ -57,12 +57,13 @@ return (
                             Last Date To Supply: <br />
                             {CurrentOrder.lastDateToSupply} <br />
                         </p>
-                        <p>Total Price: {CurrentOrder.tottalPrice}</p>
+                        <p>Total Price: {CurrentOrder.tottalPrice} ₪</p>
                         <button className='CustomButton' type="button" onClick={CancelOrder}>Cancel Order</button>
                     </span>
                 }
+                {/* For shopping cart */}
                 {Orders.find(order => order.orderID === CurrentOrder.orderID) === undefined &&
-                    <p>Total Price: {CurrentOrder.tottalPrice}</p>
+                    <p>Total Price: {CurrentOrder.tottalPrice} ₪</p>
                 }
             </span>
         </form >

@@ -1,6 +1,8 @@
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useLocation, useNavigate } from "react-router-dom";
+import Select from 'react-select';
+
 export default function ChangeCustomerInOrder() {
 
     const data = useLocation();
@@ -20,10 +22,25 @@ export default function ChangeCustomerInOrder() {
         toast.error(Users.find(user => user.id === CurrentOrder.userID).name + "is already the owner of this order");
     }
 
+    const handleCustomerChanged = (selectedOption) =>
+    {
+        document.getElementById("SelectCustomer").value = selectedOption;
+    }
+    const GetCustomerOptions = () => {
+        let options = [];
+        options[0] = {
+            label: 'Customers',
+            options:
+                Array.from(Users).map((user) =>
+                    ({ value: user.id, label: user.name }))
+        }
+        return options;
+    }
+
     const ChangeCustomer = () => {
-        var newCustomerId = parseInt(document.getElementById("mySelect").value);
+        var newCustomerId = parseInt(document.getElementById("SelectCustomer").value);
         if (CurrentOrder.userID !== newCustomerId) {
-            CurrentOrder.userID = parseInt(document.getElementById("mySelect").value);
+            CurrentOrder.userID = parseInt(document.getElementById("SelectCustomer").value.value);
             let newOrderList = [...Orders];
             const indexToReplace = newOrderList.findIndex(oldOrder => oldOrder.orderID === CurrentOrder.orderID);
             newOrderList[indexToReplace] = CurrentOrder;
@@ -42,11 +59,7 @@ export default function ChangeCustomerInOrder() {
             <form className="CenteredForm ManageForm">
                 Current customer: {Users[CurrentOrder.userID - 1].name}
                 <div >
-                    <select id="mySelect" size={Users.length}>
-                        {Array.from(Users).map((user, key) =>
-                            <option value={user.id} key={key}>{user.name}</option>)
-                        }
-                    </select> <br />
+                    <Select onChange={handleCustomerChanged} options={GetCustomerOptions()} id='SelectCustomer' />
                     <button className='CustomButton' type="button" onClick={ChangeCustomer}>Change Customer</button>
                 </div>
             </form>

@@ -1,6 +1,7 @@
 import { useState, useEffect, } from 'react';
 import { NavLink } from "react-router-dom";
 import MultiRangeSlider from "multi-range-slider-react";
+import Select from 'react-select';
 
 export default function ViewProducts(props) {
 
@@ -10,12 +11,6 @@ export default function ViewProducts(props) {
 
     const [minValue, set_minValue] = useState(0);
     const [maxValue, set_maxValue] = useState(100);
-
-    function onlyUnique(value, index, self) {
-        return self.indexOf(value) === index;
-    }
-
-
 
     const GetProductsForChosenCategory = () => {
         return JSON.parse(localStorage.getItem("products")).filter(product => product.category === props.category);
@@ -35,9 +30,28 @@ export default function ViewProducts(props) {
             SetProductsForChosenCategory(tempProductsForChosenCategory.filter(product => product.manufacturer === chosenManufacturer).filter(product => product.price >= e.minValue && product.price <= e.maxValue));
         }
     };
-    const handleManufacturerChanged = (e) => {
-        var chosenManufacturer = e.target.value;
-        SetManufacturer(e.target.value);
+    const onlyUnique = (value, index, self) =>  {
+        return self.indexOf(value) === index;
+    }
+    const GetUniqueManufacturers = () =>  {
+        return Array.from(JSON.parse(localStorage.getItem("products")).filter(product => product.category === props.category)).map(product => product.manufacturer).filter(onlyUnique).map((manufacturer) =>
+        ({ value: manufacturer, label: manufacturer }));
+    }
+    const GetManufacturerOptions = () => {
+        var AllManufacturersOption = [{ value: 'All Manufacturers', label: 'All Manufacturers' }];
+        var AllOptions = (AllManufacturersOption.concat(GetUniqueManufacturers()));
+        let options = [];
+        options[0] = {
+            label: 'Manufacturers',
+            options:
+                AllOptions
+        }
+        return options;
+    }
+    const handleManufacturerChanged = (selectedOption) => {
+        document.getElementById("ChosenManufacturer").value = selectedOption.value;
+        var chosenManufacturer = selectedOption.value;
+        SetManufacturer(selectedOption.value);
         var tempProductsForChosenCategory = GetProductsForChosenCategory();
         if (chosenManufacturer !== "All Manufacturers") {
             tempProductsForChosenCategory = [...tempProductsForChosenCategory].filter(product => product.manufacturer === chosenManufacturer);
@@ -59,17 +73,10 @@ export default function ViewProducts(props) {
 
     return (
         <div>
-            <section className="FiltersSection">
+            <div className="FiltersSection">
                 <section className="Column ManufacturerSection">
                     <h4>Filter by manufacturer</h4>
-                    <select name="ChosenManufacturer" id="ChosenManufacturer" onChange={(e) => handleManufacturerChanged(e)}>
-                        <option value="All Manufacturers" >All Manufacturers</option>
-                        {
-                            Array.from(JSON.parse(localStorage.getItem("products")).filter(product => product.category === props.category)).map(product => product.manufacturer).filter(onlyUnique).map((manufacturer, key) =>
-                                <option value={manufacturer} key={key}>{manufacturer}</option>)
-                        }
-
-                    </select>
+                    <Select onChange={handleManufacturerChanged} options={GetManufacturerOptions()} id='ChosenManufacturer' defaultValue={{ label: Manufacturer, options: Manufacturer }} />
                 </section>
                 <section className="Column PriceSection">
                     <h4>Filter by price</h4>
@@ -87,7 +94,7 @@ export default function ViewProducts(props) {
                         }}
                     />
                 </section>
-            </section>
+            </div>
             {(ProductsForChosenCategory.length > 0) &&
                 <form className='products-table'>
                     {Array.from(ProductsForChosenCategory).map((product, key) =>

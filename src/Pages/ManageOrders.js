@@ -2,23 +2,44 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GetDate, GetLastDate } from "../GetDate/GetDate";
 import ViewOrders from "../Components/ViewOrders";
-import Select from 'react-select'
+import Select from 'react-select';
 import Search from "../Components/Search";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { DataGrid } from "@mui/x-data-grid";
 
 export default function ManageOrders() {
 
-    const Users = JSON.parse(localStorage.getItem("users"));
-    const Orders = JSON.parse(localStorage.getItem("orders"));
-    const Products = JSON.parse(localStorage.getItem("products"));
-    const Categories = JSON.parse(localStorage.getItem("categories"));
-
-    const [ManageMode, SetManageMode] = useState("Add");
-    const [OrdersForView, SetOrders] = useState(Orders);
-    const [ProductsInTheCurrentOrder, SetProducts] = useState([]);
     const navigate = useNavigate();
+    const Orders = JSON.parse(localStorage.getItem("orders"));
+    const Categories = JSON.parse(localStorage.getItem("categories"));
+    const Products = JSON.parse(localStorage.getItem("products"));
+    const Users = JSON.parse(localStorage.getItem("users"));
+    const [ManageMode, SetManageMode] = useState("Add");
+    const [ProductsInTheCurrentOrder, SetProducts] = useState([]);
+    const [removeVal, SetremoveVal] = useState(null);
+    const [addVal, SetaddVal] = useState(null);
+    const [pageSize, setPageSize] = useState(5);
 
+    const [OrdersForView, SetOrders] = useState(Orders);
+    const [OrderToRemove, SetOrderToRemove] = useState(null);
+
+    const rows = Array.from(OrdersForView).map(order => (
+        {
+            id: order.orderID,
+            customerName: (Users.find(user => user.id === order.userID)).name,
+            date: order.date,
+            lastDate: order.lastDateToSupply,
+            price: order.tottalPrice
+        }
+    ));
+    const columns = [
+        { field: "id", headerName: "ID", width: 50 },
+        { field: "customerName", headerName: "Customer Name", width: 150 },
+        { field: "date", headerName: "Created On", width: 200 },
+        { field: "lastDate", headerName: "Last Date To Supply", width: 200 },
+        { field: "price", headerName: "Price", width: 100 }
+    ];
     var CurrentOrder = {
         orderID: 0,
         userID: 0,
@@ -50,13 +71,25 @@ export default function ManageOrders() {
         toast.success("Order removed successfully");
     }
 
-
-    const handleOptionChanged = (selectedOption) => {
+    const handleProductToAddChanged = (selectedOption) => {
         document.getElementById("SelectProductToAdd").value = selectedOption.value;
+        SetaddVal(selectedOption);
+    }
+    const handleProductToRemoveChanged = (selectedOption) => {
+        document.getElementById("SelectProductToRemove").value = selectedOption.value;
+        SetremoveVal(selectedOption);
+    }
+    const handleCustomerChanged = (selectedOption) => {
+        document.getElementById("SelectUser").value = selectedOption.value;
+    }
+    const handleManageModeChanged = (selectedOption) => {
+        document.getElementById("ManageMode").value = selectedOption.value;
+        var SelectedManageMode = document.getElementById("ManageMode").value;
+        SetManageMode(SelectedManageMode);
     }
 
 
-    const GetOptions = () => {
+    const GetProductOptions = () => {
         let options = [];
         for (let i = 0; i < Categories.length; i++) {
             options[i] = {
@@ -65,6 +98,45 @@ export default function ManageOrders() {
                     Array.from(Products).filter(product => product.category === Categories[i]).map((product) =>
                         ({ value: product.id, label: product.name }))
             }
+        }
+        return options;
+    }
+    const GetProductToRemoveOptions = () => {
+        let options = [];
+        for (let i = 0; i < Categories.length; i++) {
+            var products = ProductsInTheCurrentOrder.filter(product => product.category === Categories[i]);
+            if (products.length > 0) {
+                options[i] = {
+                    label: Categories[i],
+                    options:
+                        Array.from(products).map((product) =>
+                            ({ value: product.id, label: product.name }))
+                }
+            }
+        }
+        return options;
+    }
+
+
+    const GetCustomerOptions = () => {
+        let options = [];
+        options[0] = {
+            label: 'Customers',
+            options:
+                Array.from(Users).map((user) =>
+                    ({ value: user.id, label: user.name }))
+        }
+        return options;
+    }
+
+    const GetManageOptions = () => {
+        let ManageModes = ['Add', 'Edit', 'Remove', 'Search'];
+        let options = [];
+        options[0] = {
+            label: 'Manage Modes',
+            options:
+                Array.from(ManageModes).map((manageMode) =>
+                    ({ value: manageMode, label: manageMode }))
         }
         return options;
     }
@@ -87,11 +159,11 @@ export default function ManageOrders() {
 
     const RemoveProduct = (e) => {
         e.preventDefault();
-        var selectedProductName = document.getElementById("SelectProductToRemove").value;
-        if (selectedProductName) {
-            var selectedProduct = ProductsInTheCurrentOrder.findIndex(product => product.name === selectedProductName);
+        if (removeVal) {
+            var selectedProduct = ProductsInTheCurrentOrder.findIndex(product => product.id === removeVal.value);
             var newProducts = ProductsInTheCurrentOrder.filter((value, arrIndex) => selectedProduct !== arrIndex);
             SetProducts(newProducts);
+            SetremoveVal(null);
         }
         else
             NotifyNoProductSelected();
@@ -99,10 +171,10 @@ export default function ManageOrders() {
 
     const AddProduct = (e) => {
         e.preventDefault();
-        var selectedProductId = parseInt(document.getElementById("SelectProductToAdd").value);
-        if (selectedProductId) {
-            var newProducts = [...ProductsInTheCurrentOrder, Products.find(product => product.id === selectedProductId)];
+        if (addVal) {
+            var newProducts = [...ProductsInTheCurrentOrder, Products.find(product => product.id === addVal.value)];
             SetProducts(newProducts);
+            SetaddVal(null);
         }
         else
             NotifyNoProductSelected();
@@ -121,13 +193,8 @@ export default function ManageOrders() {
         localStorage.setItem("orders", JSON.stringify(newOrderList));
     }
 
-    const ChangeManageMode = () => {
-        var SelectedManageMode = document.getElementById("ManageMode").value;
-        SetManageMode(SelectedManageMode);
-    }
-
     const RemoveOrder = () => {
-        var SelectedOrder = parseInt(document.getElementById("SelectOrderToRemove").value);
+        var SelectedOrder = parseInt(OrderToRemove);
         if (SelectedOrder) {
             var newOrdersList = Orders.filter(order => order.orderID !== SelectedOrder);
             SetOrders(newOrdersList);
@@ -140,13 +207,12 @@ export default function ManageOrders() {
     }
 
     const CheckAddFormValidate = () => {
-        if (document.getElementById("SelectUser").value === "") {
+        if (!document.getElementById("SelectUser").value) {
             NotifyEmptyField("Please select a user");
             return false
         }
-        var newProducts = document.getElementById("ProductsForNewOrder").options;
-        if (newProducts.length < 1) {
-            NotifyEmptyField("Please add product to your new order");
+        if (ProductsInTheCurrentOrder.length < 1) {
+            NotifyEmptyField("Please add a product to your new order");
             return false
         }
         return true;
@@ -154,36 +220,23 @@ export default function ManageOrders() {
 
 
     return (
-        <div>
-            <h1 className='PageHeader'>Manage Orders</h1>
+        <div className="CenteredForm">
+            <h1 className='PageHeader'><span>Manage Orders</span></h1>
             <form className="CenteredForm ManageForm">
                 <label>Choose manage mode:</label>
-                <select id="ManageMode" size="4" onChange={ChangeManageMode}>
-                    <option value="Add">Add</option>
-                    <option value="Edit">Edit</option>
-                    <option value="Remove">Remove</option>
-                    <option value="Search">Search</option>
-                </select>
+                <Select onChange={handleManageModeChanged} options={GetManageOptions()} defaultValue={{ label: 'Add', options: 'Add' }} id='ManageMode' />
+
                 {ManageMode === "Add" &&
                     <span>
                         <h2 className="PageHeader">Add an order</h2>
                         <div className="ChangeProducts">
                             <label>Choose a customer:</label>
-                            <select id="SelectUser" size="5">
-                                {Array.from(Users).map((user, key) =>
-                                    <option value={user.id} key={key}>{user.name}</option>)
-                                }
-                            </select>
-
-                            <label>Products in your new order:</label>
-                            <select id="ProductsForNewOrder" size="5">
-                                {Array.from(ProductsInTheCurrentOrder).map((product, key) =>
-                                    <option key={key}>{product.name}</option>)
-                                }
-                            </select>
+                            <Select onChange={handleCustomerChanged} options={GetCustomerOptions()} id='SelectUser' />
+                            <label>Select a product to remove:</label>
+                            <Select onChange={handleProductToRemoveChanged} options={GetProductToRemoveOptions()} id='SelectProductToRemove' value={removeVal} />
                             <button className='CustomButton' onClick={RemoveProduct}>Remove Product</button>
-
-                            <Select onChange={handleOptionChanged} options={GetOptions()} id="SelectProductToAdd" />
+                            <label>Select a product to add:</label>
+                            <Select onChange={handleProductToAddChanged} options={GetProductOptions()} id="SelectProductToAdd" value={addVal} />
                             <button className='CustomButton' onClick={AddProduct}>Add Product</button>
                             <button className='CustomButton' type="button" onClick={CreateOrder}>Create Order</button>
 
@@ -201,12 +254,15 @@ export default function ManageOrders() {
                     <div>
                         <h2 className="PageHeader">Remove an order</h2>
                         <div className="CenteredForm">
-
-                            <select id="SelectOrderToRemove" size={OrdersForView.length}>
-                                {Array.from(OrdersForView).map((order, key) =>
-                                    <option value={order.orderID} key={key}>Order number: {order.orderID} Customer Name: {Users[order.userID - 1].name}</option>)
-                                }
-                            </select>
+                            <div className='DataTable'>
+                                <DataGrid rows={rows} columns={columns} getRowId={(row) => row.id}
+                                    pageSize={pageSize}
+                                    onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                                    rowsPerPageOptions={[5, 10, 20]}
+                                    onSelectionModelChange={(newSelectionModel) => {
+                                        SetOrderToRemove(newSelectionModel);
+                                    }} />
+                            </div>
                             <button className='CustomButton' type="button" onClick={RemoveOrder}>Remove the selected order</button>
 
                         </div>

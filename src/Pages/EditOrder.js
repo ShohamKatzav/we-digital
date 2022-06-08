@@ -40,14 +40,14 @@ export default function EditOrder() {
     }, [data, CurrentOrder]);
 
     return (
-        <div>
+        <div className="CenteredForm">
             {Orders.find(order => order.orderID === CurrentOrder.orderID) &&
-                <h1 className="PageHeader">Details for order number {OrderID}:</h1>
+                <h1 className="PageHeader"><span>Details for order number {OrderID}:</span></h1>
             }
             {OrderID === "NewOrder" &&
                 <h1 className="PageHeader">Cart details</h1>
             }
-            <form className="CenteredForm">
+            <form className="CenteredForm ManageForm">
                 <p><label>Customer: {User.name} </label></p>
                 <button className='CustomButton' type="button" onClick={ChangeCustomer}>Change Customer</button><br />
                 <span>
@@ -55,7 +55,7 @@ export default function EditOrder() {
                         <label>Products:</label> <br />
                         {
                             Array.from(ProductsInThisOrder).map((product, key) =>
-                                <li key={key}>{product.name}</li>)
+                                <li key={key}>{product.name} - price: {product.price} ₪</li>)
                         }
                     </p>
                     <button className='CustomButton' type="button" onClick={ChangeProducts}>Change Products</button><br />
@@ -68,7 +68,7 @@ export default function EditOrder() {
                                 Last Date To Supply: <br />
                                 {CurrentOrder.lastDateToSupply} <br />
                             </p>
-                            <p>Total Price: {CurrentOrder.tottalPrice}</p>
+                            <p>Total Price: {CurrentOrder.tottalPrice} ₪</p>
                             <button className='CustomButton' type="button" onClick={CancelOrder}>Cancel Order</button>
                         </span>
                     }

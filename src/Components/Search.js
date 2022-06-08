@@ -55,7 +55,7 @@ export default function Search(props) {
                 <Autocomplete
                     options={SortProductsByCategory(items)}
                     groupBy={(item) => item.category}
-                    renderInput={(params) => <TextField {...params} label='Products' />}
+                    renderInput={(params) => <TextField {...params} label='Products' style={{ backgroundColor: "white" }} />}
                     onChange={(event, value) => handleChange(event, value)}
                     getOptionLabel={(item) => item.name}
                 />
@@ -66,7 +66,7 @@ export default function Search(props) {
             <Stack spacing={2} width='250px'>
                 <Autocomplete
                     options={items}
-                    renderInput={(params) => <TextField {...params} label='Customers' />}
+                    renderInput={(params) => <TextField {...params} label='Customers' style={{ backgroundColor: "white" }} />}
                     getOptionLabel={(item) => item.name}
                     onChange={(event, value) => handleChange(event, value)}
                     isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -84,7 +84,7 @@ export default function Search(props) {
                     <Autocomplete
                         options={SortOrdersByCustomerName(items)}
                         groupBy={(item) => GetCustomerNameForAnOrder(item)}
-                        renderInput={(params) => <TextField {...params} label='Orders' />}
+                        renderInput={(params) => <TextField {...params} label='Orders' style={{ backgroundColor: "white" }} />}
                         getOptionLabel={(item) => String(item.orderID)}
                         onChange={(event, value) => handleChange(event, value)}
                     />
@@ -95,7 +95,7 @@ export default function Search(props) {
                     <Autocomplete
                         options={SortOrdersByCustomerName(items)}
                         groupBy={(item) => GetCustomerNameForAnOrder(item)}
-                        renderInput={(params) => <TextField {...params} label='Orders' />}
+                        renderInput={(params) => <TextField {...params} label='Orders' style={{ backgroundColor: "white" }} />}
                         getOptionLabel={(item) => String(item.orderID)}
                         onChange={(event, value) => handleChange(event, value)}
                         filterOptions={filterOptions}

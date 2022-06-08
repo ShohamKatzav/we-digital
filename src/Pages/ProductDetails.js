@@ -46,33 +46,36 @@ export default function ProductDetails() {
     }
     sessionStorage.setItem("NewOrder", JSON.stringify(Order));
     await ChangeButtonStyle();    // Execute first
-    await waitFor(1000); // wait 100 milliseconds
+    await waitFor(1000); // wait 1000 milliseconds
     await ChangeButtonStyle()     // then run this
   }
 
   if (Product) {
     return (
-      <form className="CenteredForm ProductDetails">
-        <h1>{Product.name}</h1>
-        <section>
-          <img className="Column ProductImage" src={Product.img} alt="Product"></img>
-          <p className="Column Info">
-            <label>Type: {Product.category}</label>
-            <label>Manufacturer: {Product.manufacturer}</label>
-            <label>Price: {Product.price}</label>
-          </p>
-        </section>
-        <button onClick={AddToCart} className="addtocart">
-          <div className="pretext">
-            <i className="fas fa-cart-plus"></i> ADD TO CART
-          </div>
+      <div className="CenteredForm">
+        <h1 className="PageHeader"><span>{Product.name}</span></h1>
+        <form className="ProductDetails">
+          <section>
+            <img className="ProductImage Column" src={Product.img} alt="Product"></img>
+            <p className="Info Column">
+              <label>Type: {Product.category}</label>
+              <label>Manufacturer: {Product.manufacturer}</label>
+              <label>Price: {Product.price}</label>
+            </p>
+            <div className="clearShort"></div>
+            <div className="CenteredForm"><button onClick={AddToCart} className="addtocart">
+              <div className="pretext">
+                <i className="fas fa-cart-plus"></i> ADD TO CART
+              </div>
 
-          <div className="pretext done">
-            <div className="posttext"><i className="fas fa-check"></i> ADDED</div>
-          </div>
-
-        </button>
-      </form>);
+              <div className="pretext done">
+                <div className="posttext"><i className="fas fa-check"></i> ADDED</div>
+              </div>
+            </button>
+            </div>
+          </section>
+        </form>
+      </div>)
   }
   else return null;
 }

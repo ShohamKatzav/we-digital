@@ -58,5 +58,15 @@
         "email": "Efrat@we-digital.com",
         "authorize": "customer",
         "avatar": "Efrat"
+    },
+    {
+        "id": 7,
+        "username": "Vered",
+        "password": "12345",
+        "name": "Vered",
+        "lastName": "Tal",
+        "email": "Vered@we-digital.com",
+        "authorize": "customer",
+        "avatar": "Vered"
     }
 ]

@@ -1,6 +1,6 @@
 export default function About() {
     return (
-        <form className='About'>
+        <form className='About ManageForm'>
             <h1 className="PageHeader">About Us</h1>
             <p>
                 Welcome to We Digital, your number one online source for computers and computer peripheral devices.

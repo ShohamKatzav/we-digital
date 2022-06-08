@@ -28,13 +28,13 @@ export default function Home() {
                 <Cart />
                 <ViewCategories />
                 <section className="Column SearchSection">
-                    <h2 className="PageHeader">Products search:</h2>
+                    <h2 className="PageHeader"><span>Products search:</span></h2>
                     <div className="Search">
                         <Search items={JSON.parse(localStorage.getItem("products"))} type="product" />
                     </div>
                 </section>
                 <section className="Column PreviewProductsSection">
-                    <h2 className="PageHeader">Some of our products:</h2>
+                    <h2 className="PageHeader"><span>Some of our products:</span></h2>
                     <PreviewProducts />
                 </section>
 

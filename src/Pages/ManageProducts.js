@@ -1,43 +1,102 @@
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useState, useEffect } from 'react';
+import { useState} from 'react';
+import Select from 'react-select';
 
 
 export default function ManageProducts() {
 
-    const [Products, SetProducts] = useState([]);
-    const [Categories, SetCategories] = useState([]);
-    const [AddImageMethod, SetAddImageMethod] = useState("With a default Image");
-    const [ChangeImageMethod, SetChangeImageMethod] = useState("None");
+    const Categories = JSON.parse(localStorage.getItem("categories"));
+    const [Products, SetProducts] = useState(JSON.parse(localStorage.getItem("products")));
+    const [AddImageMethod, SetAddImageMethod] = useState({ label: "With a default Image", options: "With a default Image" });
+    const [ChangeImageMethod, SetChangeImageMethod] = useState({ label: "With a default Image", options: "With a default Image" });
     const [ManageMode, SetManageMode] = useState("Add");
+    const [removeVal, SetremoveVal] = useState(null);
+    const [categoryVal, SetcategoryVal] = useState(null);
+    const [productEditVal, SetproductEditVal] = useState(null);
+    const [newcategoryVal, SetnewcategoryVal] = useState(null);
 
-    useEffect(() => {
-        SetProducts(JSON.parse(localStorage.getItem("products")));
-        SetCategories(JSON.parse(localStorage.getItem("categories")));
-    }, []);
+    const [DisableCategory, SetDisableCategory] = useState(true);
+    const [DisableImage, SetDisableImage] = useState(true);
 
-    const notify = (message) => {
+    const NotifySuccess = (message) => {
         toast.success(message);
     }
-
-    const notify2 = (message) => {
+    const NotifyError = (message) => {
         toast.error(message);
     }
-
-    const notify3 = (message) => {
+    const NotifyWarning = (message) => {
         toast.warning(message);
     }
 
+    const handleNewImagChanged = (selectedOption) => {
+        SetChangeImageMethod(selectedOption);
+    }
+    const handleNewCategoryChanged = (selectedOption) => {
+        SetnewcategoryVal(selectedOption);
+    }
+    const handleProductToEditChanged = (selectedOption) => {
+        SetproductEditVal(selectedOption);
+    }
+    const handleImageImportMethodChanged = (selectedOption) => {
+        document.getElementById("ImageImportMethod").value = selectedOption;
+        SetAddImageMethod(selectedOption);
+    }
+    const handleCategoryForAddedProductChanged = (selectedOption) => {
+        document.getElementById("AddCategory").value = selectedOption.value;
+        SetcategoryVal(selectedOption);
+    }
+    const handleProductToRemoveChanged = (selectedOption) => {
+        document.getElementById("SelectProductToRemove").value = selectedOption.value;
+        SetremoveVal(selectedOption);
+    }
+    const handleManageModeChanged = (selectedOption) => {
+        document.getElementById("ManageMode").value = selectedOption.value;
+        var SelectedManageMode = document.getElementById("ManageMode").value;
+        SetManageMode(SelectedManageMode);
+        SetAddImageMethod({ label: "With a default Image", options: "With a default Image" });
+        SetChangeImageMethod({ label: "With a default Image", options: "With a default Image" });
+    }
+
+    const GetOneCategoryOptions = (labelName) => {
+        var optionsArray = [];
+        if (labelName === 'Import Methods')
+            optionsArray = ['With a default Image', 'By a url', 'By browsing a local file']
+        if (labelName === 'Manage Modes')
+            optionsArray = ['Add', 'Edit', 'Remove'];
+        if(labelName === 'Categories')
+            optionsArray = Categories;
+        let options = [{
+            label: labelName,
+            options:
+                Array.from(optionsArray).map((item) =>
+                    ({ value: item, label: item }))
+        }]
+        return options;
+    }
+
+    const GetProductOptions = () => {
+        let options = [];
+        for (let i = 0; i < Categories.length; i++) {
+            options[i] = {
+                label: Categories[i],
+                options:
+                    Array.from(Products).filter(product => product.category === Categories[i]).map((product) =>
+                        ({ value: product.name, label: product.name }))
+            }
+        }
+        return options;
+    }
     const AddProduct = async function (e) {
         e.preventDefault();
 
         if (!CheckAddFormValidate()) {
-            notify3("Please do not leave any requied field empty");
+            NotifyWarning("Please do not leave any requied field empty");
 
         }
         else
             if (Products.find(product => product.name === document.getElementById("AddName").value.trim()))
-                notify2("Product with this name already exist, Try another name");
+                NotifyError("Product with this name already exist, Try another name");
 
             else {
                 var lastProduct = Products.at(-1);
@@ -51,11 +110,11 @@ export default function ManageProducts() {
                     manufacturer: document.getElementById("AddManufacturer").value,
                     price: parseInt(document.getElementById("Price").value)
                 };
-                switch (AddImageMethod) {
+                switch (AddImageMethod.value) {
                     case "By a url":
                         newProduct.img = document.getElementById("PreviewImage").value;
                         break;
-                    case "By Browsing a local file":
+                    case "By browsing a local file":
                         var file = document.getElementById("MyFile").files[0];
                         const processFile = (file) => {
                             const reader = new FileReader()
@@ -77,15 +136,34 @@ export default function ManageProducts() {
                         break;
                 }
                 newProducts[newProducts.length] = newProduct;
-
                 SetProducts(newProducts);
                 localStorage.removeItem("products");
                 localStorage.setItem("products", JSON.stringify(newProducts));
-                notify("Product Added");
+                NotifySuccess("Product Added");
+                // Init the form
+                InitForm();
             }
     }
 
 
+    const InitForm = () => {
+        var checkbox = document.querySelectorAll("input[type='checkbox']");
+        var TextAndNumber = document.querySelectorAll(".CustomInput");
+        for (let i = 0; i < checkbox.length; i++) {
+            checkbox[i].checked = false;
+        }
+        for (let i = 0; i < TextAndNumber.length; i++) {
+            TextAndNumber[i].value = "";
+        }
+        SetcategoryVal(null);
+        SetremoveVal(null);
+        SetproductEditVal(null);
+        SetnewcategoryVal(null);
+        SetAddImageMethod({ label: "With a default Image", options: "With a default Image" });
+        SetChangeImageMethod({ label: "With a default Image", options: "With a default Image" });
+        SetDisableCategory(true);
+        SetDisableImage(true);
+    }
     const EditProduct = async function (e) {
         e.preventDefault();
         var NameCheckbox = document.getElementById("NameCheckbox");
@@ -93,23 +171,27 @@ export default function ManageProducts() {
         var ImageCheckbox = document.getElementById("ImageCheckbox");
         var ManufacturerCheckbox = document.getElementById("ManufacturerCheckbox");
         var PriceCheckbox = document.getElementById("PriceCheckbox");
+
         if (!NameCheckbox.checked && !CategoryCheckbox.checked && !ImageCheckbox.checked && !ManufacturerCheckbox.checked && !PriceCheckbox.checked)
-            notify3("Please select a field to edit");
+            NotifyWarning("Please select a field to edit");
         else {
-            if (!CheckEditFormValidate(NameCheckbox, CategoryCheckbox, ImageCheckbox, ManufacturerCheckbox , PriceCheckbox))
-                notify3("Please do not leave any requied field empty");
+            var FormStatus = CheckEditFormValidate(NameCheckbox, CategoryCheckbox, ImageCheckbox, ManufacturerCheckbox, PriceCheckbox);
+            if (FormStatus === 0)
+                NotifyError("Select a products to edit");
+            else if (FormStatus === 1)
+                NotifyWarning("Please do not leave any requied field empty");
             else
                 if (Products.find(product => product.name === document.getElementById("NewName").value.trim()))
-                    notify2("Product with this name already exist, Try another name");
+                    NotifyError("Product with this name already exist, Try another name");
 
                 else {
-                    var ProductToEdit = GetProductByName(document.getElementById("EditProduct").value);
+                    var ProductToEdit = GetProductByName(productEditVal.value);
                     var EditedProduct = ProductToEdit;
                     if (NameCheckbox.checked) {
                         EditedProduct.name = document.getElementById("NewName").value;
                     }
                     if (CategoryCheckbox.checked) {
-                        EditedProduct.category = document.getElementById("NewCategory").value;
+                        EditedProduct.category = newcategoryVal.value;
                     }
                     if (ManufacturerCheckbox.checked) {
                         EditedProduct.manufacturer = document.getElementById("NewManufacturer").value;
@@ -118,11 +200,11 @@ export default function ManageProducts() {
                         EditedProduct.price = document.getElementById("NewPrice").value;
                     }
                     if (ImageCheckbox.checked) {
-                        switch (ChangeImageMethod) {
+                        switch (ChangeImageMethod.value) {
                             case "By a url":
                                 EditedProduct.img = document.getElementById("EditedPreviewImage").value;
                                 break;
-                            case "By Browsing a local file":
+                            case "By browsing a local file":
                                 var file = document.getElementById("EditedMyFile").files[0];
                                 const processFile = (file) => {
                                     const reader = new FileReader()
@@ -151,39 +233,15 @@ export default function ManageProducts() {
                     newProducts[indexToReplace] = EditedProduct;
                     SetProducts(newProducts);
                     localStorage.setItem("products", JSON.stringify(newProducts));
-                    notify("Product Edited");
+                    NotifySuccess("Product Edited");
+                    // Init the form
+                    InitForm();
                 }
         }
     }
-
-
-    const CheckAddFormValidate = () => {
-        if ((document.getElementById("AddName").value.trim() === "") ||
-            (document.getElementById("AddCategory").value.trim() === "") ||
-            (document.getElementById("AddManufacturer").value.trim() === "") ||
-            (document.getElementById("Price").value.trim() === "")) {
-            return false;
-        }
-        else
-            return true;
-    }
-    const CheckEditFormValidate = (NameCheckbox, CategoryCheckbox, ImageCheckbox, ManufacturerCheckbox ,PriceCheckbox) => {
-        if ((document.getElementById("EditProduct").value.trim() === "") ||
-            (NameCheckbox.checked && (document.getElementById("NewName").value.trim() === "")) ||
-            (CategoryCheckbox.checked && (document.getElementById("NewCategory").value === "")) ||
-            (ImageCheckbox.checked && (document.getElementById("NewImage").value === "")) ||
-            (ManufacturerCheckbox.checked && (document.getElementById("NewManufacturer").value === "")) ||
-            (PriceCheckbox.checked && (document.getElementById("NewPrice").value < 1))) {
-            return false;
-        }
-        else
-            return true;
-    }
-
     const RemoveProduct = (e) => {
         e.preventDefault();
-        var ProductNameToRemove = document.getElementById("RemoveProduct").value;
-
+        var ProductNameToRemove = document.getElementById("SelectProductToRemove").value;
         if (ProductNameToRemove != null && ProductNameToRemove !== "") {
             let newProducts = Products.filter(function (product) {
                 return product.name !== ProductNameToRemove;
@@ -191,139 +249,110 @@ export default function ManageProducts() {
             SetProducts(newProducts);
             localStorage.removeItem("products");
             localStorage.setItem("products", JSON.stringify(newProducts));
-
-            notify("Product removed");
+            NotifySuccess("Product removed");
+            InitForm();
         }
         else
-            notify2("Could not remove the product");
+            NotifyError("Could not remove the product");
 
     }
-
-    const ChangeImageImportMethod = (e) => {
-        var method = e.target.value;
-        if (e.target.id === "ImageImportMethod")
-            SetAddImageMethod(method);
+    const CheckAddFormValidate = () => {
+        if ((document.getElementById("AddName").value.trim() === "") ||
+            (document.getElementById("AddCategory").value === undefined) ||
+            (document.getElementById("AddManufacturer").value.trim() === "") ||
+            (document.getElementById("Price").value.trim() === "")) {
+            return false;
+        }
         else
-            if (e.target.id === "NewImage")
-                SetChangeImageMethod(method);
-
+            return true;
     }
-    const ChangeManageMode = () => {
-        var mode = document.getElementById("ManageMode").value;
-        SetManageMode(mode);
-        SetAddImageMethod("With a default Image");
-        SetChangeImageMethod("None");
+    const CheckEditFormValidate = (NameCheckbox, CategoryCheckbox, ImageCheckbox, ManufacturerCheckbox, PriceCheckbox) => {
+        // 0 == no product selected
+        if (!productEditVal)
+            return 0;
+        // 1 == invalid form (fields)
+        else if ((NameCheckbox.checked && (document.getElementById("NewName").value.trim() === "")) ||
+            (CategoryCheckbox.checked && !newcategoryVal) ||
+            (ImageCheckbox.checked && !ChangeImageMethod) ||
+            (ManufacturerCheckbox.checked && (document.getElementById("NewManufacturer").value === "")) ||
+            (PriceCheckbox.checked && (document.getElementById("NewPrice").value < 1))) {
+            return 1;
+        }
+        // valid form
+        else
+            return 3;
     }
-
     const EditProductNameCheckbox = (e) => {
         var nameTextbox = document.getElementById("NewName");
-        if (e.target.checked === true) {
+        if (e.target.checked === true)
             nameTextbox.placeholder = "Enter a new name";
-            nameTextbox.disabled = false;
-        }
-        else {
+        else
             nameTextbox.placeholder = "Mark the checkbox to type";
-            nameTextbox.disabled = true;
-        }
+        nameTextbox.disabled = !nameTextbox.disabled;
     }
     const EditProductCategoryCheckbox = (e) => {
-        var categorySelect = document.getElementById("NewCategory");
-        if (e.target.checked === true) {
-            categorySelect.value = " ";
-            categorySelect.disabled = false;
-        }
-        else {
-            categorySelect.value = "";
-            categorySelect.disabled = true;
-        }
+        SetnewcategoryVal(null);
+        SetDisableCategory(!DisableCategory)
     }
     const EditProductImageCheckbox = (e) => {
 
-        var imageSelect = document.getElementById("NewImage");
-        if (e.target.checked === true) {
-            imageSelect.value = " ";
-            imageSelect.disabled = false;
-        }
-        else {
-            SetChangeImageMethod("None");
-            imageSelect.value = "";
-            imageSelect.disabled = true;
-        }
+        
+        SetChangeImageMethod({label: "With a default Image", options: "With a default Image"});
+        SetDisableImage(!DisableImage);
     }
-
     const EditProductPriceCheckbox = (e) => {
-
         var priceInput = document.getElementById("NewPrice");
-        if (e.target.checked === true) {
-            priceInput.disabled = false;
-        }
-        else {
-            priceInput.disabled = true;
-        }
+        if (e.target.checked === true)
+            priceInput.placeholder = "Enter a new price";
+        else
+            priceInput.placeholder = "Mark the checkbox to type";
+        priceInput.disabled = !priceInput.disabled;
     }
-
-    const EditProductManufacturerCheckbox = (e) =>{
+    const EditProductManufacturerCheckbox = (e) => {
         var manufacturerInput = document.getElementById("NewManufacturer");
-        if (e.target.checked === true) {
-            manufacturerInput.disabled = false;
-        }
-        else {
-            manufacturerInput.disabled = true;
-        }
+        if (e.target.checked === true)
+            manufacturerInput.placeholder = "Enter a manufacturer name";
+        else
+            manufacturerInput.placeholder = "Mark the checkbox to type";
+        manufacturerInput.disabled = !manufacturerInput.disabled;
     }
-
     const GetProductByName = (name) => {
         var RequestProduct = Products.find(product => product.name === name);
         return RequestProduct;
     }
 
     return (
-
-        <div>
-            <h1 className='PageHeader'>Manage Products</h1>
+        <div className='CenteredForm'>
+            <h1 className='PageHeader'><span>Manage Products</span></h1>
             <form className="CenteredForm ManageForm">
                 <div>
                     <label>Choose manage mode:</label>
-                    <select name="ManageMode" id="ManageMode" onChange={ChangeManageMode}>
-                        <option value={"Add"}>Add</option>)
-                        <option value={"Edit"}>Edit</option>)
-                        <option value={"Remove"}>Remove</option>)
-                    </select>
+                    <Select onChange={handleManageModeChanged} options={GetOneCategoryOptions('Manage Modes')} defaultValue={{ label: 'Add', options: 'Add' }} id='ManageMode' />
                 </div>
 
                 {ManageMode === "Add" &&
                     <div>
                         <label>Enter product name to add:</label>
-                        <input type="text" id="AddName" placeholder="Product name to add" />
+                        <input className='CustomInput' type="text" id="AddName" placeholder="Product name to add" />
                         <label>Select a category for the new product:</label>
-                        <select name="AddCategory" id="AddCategory" defaultValue="">
-                            <option hidden></option>
-                            {Categories !== null &&
-                                Array.from(Categories).map((category, key) =>
-                                    <option value={category} key={key}>{category}</option>)
-                            }
-                        </select>
+                        <Select onChange={handleCategoryForAddedProductChanged} options={GetOneCategoryOptions('Categories')} id="AddCategory" value={categoryVal} />
                         <label>Select image import method:</label>
-                        <select name="ImageImportMethod" id="ImageImportMethod" onChange={(e) => ChangeImageImportMethod(e)} defaultValue="With a default Image">
-                            <option value={"With a default Image"}>With a default Image</option>)
-                            <option value={"By a url"}>By a url</option>)
-                            <option value={"By Browsing a local file"}>By Browsing a local file</option>)
-                        </select>
-                        {AddImageMethod === "With a default Image" &&
-                            <label>Adding with a default image.</label>
+                        <Select onChange={handleImageImportMethodChanged} options={GetOneCategoryOptions('Import Methods')} value={AddImageMethod} id='ImageImportMethod' />
+                        {AddImageMethod.label === "With a default Image" &&
+                            <label>Adding with default image.</label>
                         }
-                        {AddImageMethod === "By a url" &&
-                            <input type="text" id="PreviewImage" placeholder="Enter image location" />
+                        {AddImageMethod.label === "By a url" &&
+                            <input className='CustomInput' type="text" id="PreviewImage" placeholder="Enter image location" />
                         }
-                        {AddImageMethod === "By Browsing a local file" &&
-                            <input type="file" id="MyFile" accept="image/*" />
+                        {AddImageMethod.label === "By browsing a local file" &&
+                            <input className='CustomInput' type="file" id="MyFile" accept="image/*" />
                         }
                         <label>Enter manufacturers name:</label>
-                        <input type="text" id="AddManufacturer"
+                        <input className='CustomInput' type="text" id="AddManufacturer"
                             placeholder="Manufacturers Name"
                         />
                         <label>Enter price:</label>
-                        <input type="number" id="Price"
+                        <input className='CustomInput' type="number" id="Price"
                             placeholder="Price - Numbers only"
                             min="1" />
                         <button className='CustomButton' onClick={AddProduct}>Add product</button>
@@ -332,75 +361,44 @@ export default function ManageProducts() {
                 {ManageMode === "Edit" &&
                     <div>
                         <label>Select a product to edit:</label>
-                        <select name="EditProduct" id="EditProduct">
-                            <option value="" hidden>Select a product</option>
-                            {Products !== null &&
-                                Array.from(Products).map((product, key) =>
-                                    <option value={product.name} key={key}>{product.name}</option>)
-                            }
-                        </select>
+                        <Select onChange={handleProductToEditChanged} options={GetProductOptions()} id="SelectProductToEdit" value={productEditVal} />
                         <label>Select the fields you'd like to edit:</label>
                         <input type="checkbox" id="NameCheckbox" onChange={(e) => EditProductNameCheckbox(e)}></input>
                         <label className="LabelForCheckbox">Product name</label>
-                        <input type="text" id="NewName" placeholder="Mark the checkbox to type" disabled />
-
+                        <input className='CustomInput' type="text" id="NewName" placeholder="Mark the checkbox to type" disabled />
                         <input type="checkbox" id="CategoryCheckbox" onChange={(e) => EditProductCategoryCheckbox(e)}></input>
-                        <label className="LabelForCheckbox">Category</label>
-                        <select name="NewCategory" id="NewCategory" disabled defaultValue={""}>
-                            <option value="" hidden>Mark the checkbox to select</option>
-                            {Categories !== null &&
-                                Array.from(Categories).map((category, key) =>
-                                    <option value={category} key={key}>{category}</option>)
-                            }
-                        </select>
-
+                        <label className="LabelForCheckbox">Category</label><br /> <br />
+                        <Select onChange={handleNewCategoryChanged} options={GetOneCategoryOptions('Categories')} id="NewCategory" value={newcategoryVal} isDisabled={DisableCategory} /><br />
                         <input type="checkbox" id="ImageCheckbox" onChange={(e) => EditProductImageCheckbox(e)}></input>
-                        <label className="LabelForCheckbox">Image</label>
-                        <select name="NewImage" id="NewImage" onChange={(e) => ChangeImageImportMethod(e)} disabled defaultValue={""}>
-                            <option value="" hidden>Mark the checkbox to select</option>
-                            <option value={"With a default Image"}>With a default Image</option>)
-                            <option value={"By a url"}>By a url</option>)
-                            <option value={"By Browsing a local file"}>By Browsing a local file</option>)
-                        </select>
-                        {ChangeImageMethod === "With a default Image" &&
-                            <label >Changing to a default image.</label>
+                        <label className="LabelForCheckbox">Image</label><br /><br />
+                        <Select onChange={handleNewImagChanged} options={GetOneCategoryOptions('Import Methods')} id="NewImage" value={ChangeImageMethod} isDisabled={DisableImage} />
+                        {ChangeImageMethod.label === "With a default Image" &&
+                            <label >Changing to default image.</label>
                         }
-                        {ChangeImageMethod === "By a url" &&
-                            <input type="text" id="EditedPreviewImage" placeholder="Enter image location" />
+                        {ChangeImageMethod.label === "By a url" &&
+                            <input className='CustomInput' type="text" id="EditedPreviewImage" placeholder="Enter image location" />
                         }
-                        {ChangeImageMethod === "By Browsing a local file" &&
-                            <input type="file" id="EditedMyFile" accept="image/*" />
+                        {ChangeImageMethod.label === "By browsing a local file" &&
+                            <input className='CustomInput' type="file" id="EditedMyFile" accept="image/*" />
                         }
-
                         <input type="checkbox" id="ManufacturerCheckbox" onChange={(e) => EditProductManufacturerCheckbox(e)}></input>
                         <label className="LabelForCheckbox">Manufacturer</label>
-                        <input type="text" id="NewManufacturer" placeholder="Mark the checkbox to type" disabled />
-
+                        <input className='CustomInput' type="text" id="NewManufacturer" placeholder="Mark the checkbox to type" disabled />
                         <input type="checkbox" id="PriceCheckbox" onChange={(e) => EditProductPriceCheckbox(e)}></input>
                         <label className="LabelForCheckbox">Price</label>
-                        <input type="number" id="NewPrice" placeholder="Mark the checkbox to type" min="1" disabled />
+                        <input className='CustomInput' type="number" id="NewPrice" placeholder="Mark the checkbox to type" min="1" disabled />
                         <button className='CustomButton' onClick={EditProduct}>Edit product</button>
-
-
                     </div>
                 }
                 {ManageMode === "Remove" &&
                     <div>
                         <label>Select a product to remove:</label>
-                        <select name="RemoveProduct" id="RemoveProduct">
-                            {Products !== null &&
-                                Array.from(Products).map((product, key) =>
-                                    <option value={product.name} key={key}>{product.name}</option>)
-                            }
-                        </select>
+                        <Select onChange={handleProductToRemoveChanged} options={GetProductOptions()} id="SelectProductToRemove" value={removeVal} />
                         <button className='CustomButton' onClick={RemoveProduct}>Remove product</button>
                     </div>
                 }
-
             </form>
-
             <ToastContainer position='top-center' autoClose='2000' />
-
         </div >
     );
 }

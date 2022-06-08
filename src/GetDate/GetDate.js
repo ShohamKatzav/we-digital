@@ -14,5 +14,5 @@ const DateToString = (date) => {
     date = new Date(date);
     date = date.toISOString().substr(0, 19);
     date = date.replace("T", ", Hour: ");
-    return "Date: " + date;
+    return date;
 }

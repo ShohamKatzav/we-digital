@@ -11,7 +11,9 @@ export default function Category() {
         return (
             <div>
                 <div className="Centered">
-                    <h1 className='PageHeader'>{location.state.category}</h1>
+                    <div className='CenteredForm'>
+                        <h1 className='PageHeader'><span>{location.state.category}</span></h1>
+                    </div>
                     <ViewProducts category={location.state.category} />
                 </div>
             </div>
